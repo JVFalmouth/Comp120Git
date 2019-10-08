@@ -1,21 +1,31 @@
 import pygame, sys
 from pygame.locals import *
 
-def reduce_red(pic):
-    pygame.Surface.unlock(pic)
-    for x in range (pic.get_size()[0]):
-        for y in range(pic.get_size()[1]):
-            colour = list(pic.get_at((x,y)))
-            recolour = colour[0]
-            colour[0] = colour[2]
-            colour[2] = recolour
-            colour[2] = colour[2] * 0.5
-            pic.set_at((x,y), colour)
 
 class Pic:
+
     def __init__(self):
-        self.pic = pygame.image.load(picture_addr)
         self.pos = (1, 1)
+        self.pic = None
+
+    def reduce_red(self):
+        pygame.Surface.unlock(self.pic)
+        for x in range(self.pic.get_size()[0]):
+            for y in range(self.pic.get_size()[1]):
+                colour = list(self.pic.get_at((x, y)))
+                recolour = colour[0]
+                colour[0] = colour[2]
+                colour[2] = recolour
+                colour[2] = colour[2] * 0.5
+                self.pic.set_at((x, y), colour)
+
+    def set_pic(self, img):
+        self.pic = pygame.image.load(img)
+        self.reduce_red()
+
+    def draw(self, surface):
+        surface.blit(self.pic, self.pos)
+
 
 class Block:
 
@@ -36,23 +46,26 @@ def main():
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Moving Block.")
 
-    WHITE = (250, 250, 250)
-    GREEN = (0, 250, 0)
-    BLACK = (0, 0, 0)
+    white = (250, 250, 250)
+    green = (0, 250, 0)
+    black = (0, 0, 0)
 
     background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill(WHITE)
+    background.fill(white)
     clock = pygame.time.Clock()
 
     box = Block()
+
+    red_ball = Pic()
+    red_ball.set_pic("red_ball.jpg")
 
     while True:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
                 return
-        screen.fill(BLACK)
+        screen.fill(black)
         box.draw(screen)
         if pygame.key.get_pressed()[pygame.K_d] and (box.box_x + box.size) < screen.get_size()[0]:
             box.box_x += box.speed
@@ -62,12 +75,9 @@ def main():
             box.box_y -= box.speed
         if pygame.key.get_pressed()[pygame.K_s] and (box.box_y + box.size) < screen.get_size()[1]:
             box.box_y += box.speed
+        if pygame.key.get_pressed()[pygame.K_r]:
+            red_ball.draw(screen)
 
-        """
-        red_ball_pos = (1, 1)
-        reduce_red(red_ball)
-        screen.blit(background, (0, 0))
-        screen.blit(red_ball, (red_ball_pos))"""
         pygame.display.flip()
 
 main()
